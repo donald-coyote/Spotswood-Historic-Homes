@@ -85,6 +85,24 @@
             font-size: 16px; /* Reduce font size on smaller screens */
         }
     }
+.year-slider-control {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #222;
+    margin-top: 70px; /* Keep clear of title banner */
+}
+.year-slider-control label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    display: block;
+}
+.year-slider-control input[type="range"] {
+    width: 220px;
+}
 </style>
 <div class="title-banner">
   Spotswood Historic Homes
@@ -2399,6 +2417,62 @@
   "forceSeparateButton": false,
 }
             ).addTo(map_9a2151e06d068b93ba89768d85a19fd5);
+        
+        // Year slider that toggles decade layers automatically
+        const yearSliderControl = L.control({ position: 'bottomleft' });
+        yearSliderControl.onAdd = function () {
+            const container = L.DomUtil.create('div', 'year-slider-control');
+            container.innerHTML = `
+                <label for="year-slider">Year: <span id="year-value"></span></label>
+                <input id="year-slider" type="range" min="1700" max="2025" step="1" value="2025" />
+            `;
+            L.DomEvent.disableClickPropagation(container);
+            return container;
+        };
+        yearSliderControl.addTo(map_9a2151e06d068b93ba89768d85a19fd5);
+
+        const overlayRanges = [
+            { layer: marker_cluster_bcdc3e947f1a18653fc0338b50230643, start: 1700 },
+            { layer: marker_cluster_5195913a51e49203533a7f3956a0deee, start: 1800 },
+            { layer: marker_cluster_f8b76e6bbccefecb047f71457c8b1daa, start: 1900 },
+            { layer: marker_cluster_dc2d11bebda2cd802e4da705ec2d1dae, start: 1910 },
+            { layer: marker_cluster_9775ed13d9bdd1a4d105374989e7209f, start: 1920 },
+            { layer: marker_cluster_4a9ca888ecf91f1c4f1b5a011a443618, start: 1930 },
+            { layer: marker_cluster_bf4c631866d294d2d56c07429db15930, start: 1940 },
+            { layer: marker_cluster_273309c4cee32a160a02dcdc20145ad6, start: 1950 },
+            { layer: marker_cluster_ed42467786e0f55e3daabaf3195d4968, start: 1960 },
+            { layer: marker_cluster_0e115bb9b430d9419e0d0770cee6b799, start: 1970 },
+            { layer: marker_cluster_5724a54dd9239f6992d916cd3fb7c617, start: 1980 },
+            { layer: marker_cluster_68d452ec98561cd6831be4620d513d74, start: 1990 },
+            { layer: marker_cluster_35d71300c128805630ba9e8e0a0cda7c, start: 2000 },
+            { layer: marker_cluster_f284a73070648abd51a03c5df5844cff, start: 2010 },
+            { layer: marker_cluster_03b886ccab3fb7d3a045946b2688f408, start: 2020 },
+        ];
+
+        const yearSlider = document.getElementById('year-slider');
+        const yearValue = document.getElementById('year-value');
+
+        const updateYearFilter = (year) => {
+            overlayRanges.forEach(({ layer, start }) => {
+                const shouldShow = year >= start;
+                if (shouldShow) {
+                    if (!map_9a2151e06d068b93ba89768d85a19fd5.hasLayer(layer)) {
+                        map_9a2151e06d068b93ba89768d85a19fd5.addLayer(layer);
+                    }
+                } else if (map_9a2151e06d068b93ba89768d85a19fd5.hasLayer(layer)) {
+                    map_9a2151e06d068b93ba89768d85a19fd5.removeLayer(layer);
+                }
+            });
+            yearValue.textContent = year;
+        };
+
+        yearSlider.addEventListener('input', (evt) => {
+            const selectedYear = parseInt(evt.target.value, 10);
+            updateYearFilter(selectedYear);
+        });
+
+        // Initialize slider display
+        updateYearFilter(parseInt(yearSlider.value, 10));
         
 </script>
 </html>
